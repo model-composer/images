@@ -1,0 +1,18 @@
+{
+    "name": "model/images",
+    "description": "Images conversion and resizing via GD",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Domenico Giambra",
+            "email": "zorinik@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Model\\Images\\": "src/"}
+    },
+    "require": {
+        "ext-gd": "*",
+        "ext-exif": "*"
+    }
+}
