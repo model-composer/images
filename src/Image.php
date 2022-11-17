@@ -5,44 +5,49 @@ class Image
 	protected \GdImage $img;
 	public int $w;
 	public int $h;
-	public string $mime;
+	public ?string $mime = null;
 	public ?array $exif;
 
 	/**
 	 * Image constructor.
 	 *
-	 * @param string $url
+	 * @param string $img
+	 * @param bool $is_binary
 	 */
-	public function __construct(string $url)
+	public function __construct(string $img, bool $is_binary = false)
 	{
-		if (!file_exists($url))
-			throw new \Exception('Non existing image');
+		if ($is_binary) {
+			$this->img = imagecreatefromstring($img);
+			$ort = 0;
+		} else {
+			if (!file_exists($img))
+				throw new \Exception('Non existing image');
 
-		$size = getimagesize($url);
-		$this->mime = $size['mime'];
-		$this->exif = (@exif_read_data($url)) ?: null;
+			$size = getimagesize($img);
+			$this->mime = $size['mime'];
+			$this->exif = (@exif_read_data($img)) ?: null;
+			$ort = $this->exif ? ($this->exif['IFD0']['Orientation'] ?? $this->exif['Orientation'] ?? 0) : 0;
 
-		switch ($this->mime) {
-			case 'image/jpeg':
-				$this->img = imagecreatefromjpeg($url) ?: null;
-				break;
-			case 'image/png':
-				$this->img = imagecreatefrompng($url) ?: null;
-				break;
-			case 'image/gif':
-				$this->img = imagecreatefromgif($url) ?: null;
-				break;
-			case 'image/webp':
-				$this->img = imagecreatefromwebp($url) ?: null;
-				break;
-			default:
-				throw new \Exception('Image type not supported');
+			switch ($this->mime) {
+				case 'image/jpeg':
+					$this->img = imagecreatefromjpeg($img) ?: null;
+					break;
+				case 'image/png':
+					$this->img = imagecreatefrompng($img) ?: null;
+					break;
+				case 'image/gif':
+					$this->img = imagecreatefromgif($img) ?: null;
+					break;
+				case 'image/webp':
+					$this->img = imagecreatefromwebp($img) ?: null;
+					break;
+				default:
+					throw new \Exception('Image type not supported');
+			}
 		}
 
 		if (!$this->img)
 			throw new \Exception('Image file not valid');
-
-		$ort = $this->exif ? ($this->exif['IFD0']['Orientation'] ?? $this->exif['Orientation'] ?? 0) : 0;
 
 		switch ($ort) {
 			case 3: // 180 rotate
