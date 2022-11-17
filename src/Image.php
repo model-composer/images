@@ -135,41 +135,50 @@ class Image
 	}
 
 	/**
-	 * @param string $url
+	 * @param string|null $url
 	 * @param array $newSizes
-	 * @return bool
-	 * @throws \Exception
+	 * @return string|null
 	 */
-	public function save(string $url, array $newSizes = []): bool
+	public function save(?string $url = null, array $newSizes = []): ?string
 	{
 		$newImg = $this->get($newSizes);
 
 		$mime = $newSizes['type'] ?? $this->mime;
 
-		if (file_exists($url))
-			unlink($url);
+		if ($url) {
+			if (file_exists($url))
+				unlink($url);
+		} else {
+			ob_start();
+		}
 
 		switch ($mime) {
 			case 'image/jpeg':
-				$s = imagejpeg($newImg, $url);
+				$response = imagejpeg($newImg, $url);
 				break;
 			case 'image/png':
-				$s = imagepng($newImg, $url);
+				$response = imagepng($newImg, $url);
 				break;
 			case 'image/gif':
-				$s = imagegif($newImg, $url);
+				$response = imagegif($newImg, $url);
 				break;
 			case 'image/webp':
-				$s = imagewebp($newImg, $url);
+				$response = imagewebp($newImg, $url);
 				break;
 			default:
 				throw new \Exception('Unsupported mime type in ImgResize save');
 		}
 
+		if (!$url)
+			$imageData = ob_get_clean();
+
+		if (!$response)
+			throw new \Exception('Unable to save');
+
 		imagedestroy($newImg);
 		unset($newImg);
 
-		return $s;
+		return $url ? null : $imageData;
 	}
 
 	/**
