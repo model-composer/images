@@ -1,4 +1,4 @@
-<?php namespace Model\ImgResize;
+<?php namespace Model\Images;
 
 class Image
 {
